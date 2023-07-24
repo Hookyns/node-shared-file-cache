@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PublishAot>true</PublishAot>
+        <PublishNodeModule>true</PublishNodeModule>
+        <PublishDir>publish</PublishDir>
+        <DebugType>None</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+        <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="0.4.4" />
+      <PackageReference Include="Microsoft.JavaScript.NodeApi.Generator" Version="0.4.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+<!--        <ItemsToCopyBase Include="$(TargetDir)*" />-->
+        <ItemsToCopyJS Include="$(TargetDir)*.js" />
+        <ItemsToCopyPublish Include="$(ProjectDir)$(PublishDir)*" />
+<!--        <ItemsToCopyBase Include="$(TargetDir)*.js;$(TargetDir)*.d.ts" />-->
+<!--        <ItemsToCopyBase Include="$(TargetDir)*.js;$(TargetDir)*.d.ts" />-->
+<!--        <ItemsToCopyNative Include="$(TargetDir)native\*" />-->
+    </ItemGroup>
+
+    <Target Name="CopyToNode" AfterTargets="Publish">
+<!--        <Copy-->
+<!--                SourceFiles="@(ItemsToCopyBase)"-->
+<!--                DestinationFolder="$(ProjectDir)..\node\dotnet-lib" />-->
+<!--        <Copy-->
+<!--                SourceFiles="@(ItemsToCopyBase)"-->
+<!--                DestinationFolder="$(ProjectDir)..\node\dotnet-lib" />-->
+<!--        <Copy-->
+<!--                SourceFiles="@(ItemsToCopyNative)"-->
+<!--                DestinationFolder="$(ProjectDir)..\node\dotnet-lib\native" />-->
+<!--        <Copy-->
+<!--                SourceFiles="@(ItemsToCopyJS)"-->
+<!--                DestinationFolder="$(ProjectDir)..\node\dotnet-lib" />-->
+<!--        <Copy-->
+<!--                SourceFiles="@(ItemsToCopyPublish)"-->
+<!--                DestinationFolder="$(ProjectDir)..\node\dotnet-lib" />-->
+
+        <Message Text="Copied published files" Importance="High" />
+    </Target>
+
+</Project>

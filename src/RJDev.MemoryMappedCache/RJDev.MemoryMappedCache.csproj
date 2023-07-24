@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+
+        <!--    <RunAOTCompilation>true</RunAOTCompilation>-->
+
+        <!--    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>-->
+        <!--    <WasmMainJSPath>main.mjs</WasmMainJSPath>-->
+
+        <TrimMode>full</TrimMode>
+        <PublishTrimmed>true</PublishTrimmed>
+        <!--    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>-->
+        <!--    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>-->
+        <!--    <InvariantGlobalization>true</InvariantGlobalization>-->
+
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Wasi.Sdk" Version="0.1.4-preview.10020" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <UpToDateCheckInput Include="native\*.c" />
+    </ItemGroup>
+    <ItemGroup>
+<!--        <ClCompile Include="native\interop.c" />-->
+        <WasiNativeFileReference Include="$(MSBuildThisFileDirectory)native\interop.c" />
+        <WasiAfterRuntimeLoaded Include="attach_internal_calls" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="test.js">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="memory-mapped-cache.js">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+</Project>
