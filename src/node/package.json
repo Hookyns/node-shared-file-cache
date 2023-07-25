@@ -1,14 +1,29 @@
 {
-  "name": "shared-file-cache",
-  "description": "",
-
+  "name": "memory-mapped-files",
+  "version": "0.1.0",
+  "description": "Loading and mapping files into the memory using native code, allowing workers to access the files without redundant reads from disk.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "tsc",
+    "prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/**/*.js",
+    "typelib/index.js",
+    "typelib/index.d.ts",
+    "dist/**/*.d.ts"
+  ],
   "type": "commonjs",
   "dependencies": {
     "node-api-dotnet": "^0.4.4"
   },
   "devDependencies": {
+    "@types/node": "^20.4.4",
     "prettier": "^3.0.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.0-beta"
   }
 }

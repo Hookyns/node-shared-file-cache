@@ -1,34 +1,36 @@
-﻿import { getAddonPath } from "./get-addon-path";
+﻿import * as path from "path";
+import {getAddonPath} from "./get-addon-path";
 
 export type Client = {
-	getFileAsync(fileName: string): Promise<string>;
-	getFile(fileName: string): string | undefined;
-	dispose(): void;
+    getFileAsync(fileName: string): Promise<string>;
+    getFile(fileName: string): string | undefined;
+    dispose(): void;
 };
 
 type Module = {
-	startCacheServer(workingDirectory: string, tcpPort: number): void;
-	stopCacheServer(): void;
-	createClient(tcpPort: number): Client;
+    startCacheServer(workingDirectory: string, include: string[], tcpPort: number): void;
+    stopCacheServer(): void;
+    createClient(tcpPort: number): Client;
 };
 
 // Import the native addon
-const { Module } = require(getAddonPath()) as { Module: Module };
+const Module: Module = require(getAddonPath()).Module;
 
 /**
  * Start cache server in the background.
- * @param workingDirectory
+ * @param workingDirectory Absolute path of the working directory or path relative CWD.
+ * @param include Glob patterns to match files from working directory which should be cached.
  * @param tcpPort
  */
-export function startCacheServer(workingDirectory: string, tcpPort: number = 9876) {
-	Module.startCacheServer(workingDirectory, tcpPort);
+export function startCacheServer(workingDirectory: string, include: string[] = ["**/*"], tcpPort: number = 9876) {
+    Module.startCacheServer(path.resolve(process.cwd(), workingDirectory), include, tcpPort);
 }
 
 /**
  * Stop cache server.
  */
 export function stopCacheServer() {
-	Module.stopCacheServer();
+    Module.stopCacheServer();
 }
 
 /**
@@ -36,5 +38,7 @@ export function stopCacheServer() {
  * @param tcpPort
  */
 export function createClient(tcpPort: number = 9876): Client {
-	return Module.createClient(tcpPort);
+    const client = Module.createClient(tcpPort);
+    (client as any)[Symbol.dispose] = () => client.dispose();
+    return client;
 }
