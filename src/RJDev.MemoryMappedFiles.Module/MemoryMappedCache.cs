@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace RJDev.MemoryMappedFiles.Module;
 
@@ -46,25 +50,45 @@ public class MemoryMappedCache
     /// </summary>
     public int LoadFiles(string[] include)
     {
-        // Matcher matcher = new();
-        // matcher.AddIncludePatterns(new[] { "*.txt", "*.asciidoc", "*.md" });
-        //
-        // string searchDirectory = "../starting-folder/";
-        //
-        // PatternMatchingResult result = matcher.Execute(
-        //     new DirectoryInfoWrapper(
-        //         new DirectoryInfo(searchDirectory)
-        //     )
-        // );
+        Matcher matcher = new();
+        matcher.AddIncludePatterns(include);
 
-        // TODO: Replace by
-        foreach (string file in Directory.GetFiles(_workingDirectory, "*", SearchOption.AllDirectories))
+        PatternMatchingResult result = matcher.Execute(
+            new DirectoryInfoWrapper(
+                new DirectoryInfo(_workingDirectory)
+            )
+        );
+
+        foreach (var fileMatch in result.Files)
         {
-            string fileName = Path.GetRelativePath(_workingDirectory, file);
-            _files.TryAdd(fileName, File.ReadAllBytes(file));
+            byte[] fileBuffer = File.ReadAllBytes(Path.Combine(_workingDirectory, fileMatch.Path));
+            AddFileToCache(fileMatch.Path, fileBuffer);
         }
 
+        // // TODO: Replace by glob matcher
+        // foreach (string file in Directory.GetFiles(_workingDirectory, "*", SearchOption.AllDirectories))
+        // {
+        //     string fileName = Path.GetRelativePath(_workingDirectory, file).Replace('\\', '/');
+        //     byte[] fileBuffer = File.ReadAllBytes(file);
+        //
+        //     AddFileToCache(fileName, fileBuffer);
+        // }
+
         return _files.Count;
+    }
+
+    /// <summary>
+    /// Try to get file from the cache. It returns false if file is not in the cache.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="GetFile"/> tries to get file from or or it loads it from disk.
+    /// </remarks>
+    /// <param name="fileName"></param>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public bool TryGetFile(string fileName, [MaybeNullWhen(false)] out byte[] file)
+    {
+        return _files.TryGetValue(fileName, out file);
     }
 
     /// <summary>
@@ -109,7 +133,8 @@ public class MemoryMappedCache
             string path = Path.GetFullPath(fileName, _workingDirectory);
             byte[] bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
 
-            _files.TryAdd(fileName, bytes);
+            // _files.TryAdd(fileName, bytes);
+            AddFileToCache(fileName, bytes);
             _readingFiles.TryRemove(fileName, out _);
             tcs.TrySetResult(bytes);
 
@@ -121,6 +146,19 @@ public class MemoryMappedCache
             _readingFiles.TryRemove(fileName, out _);
             throw;
         }
+    }
+
+    private void AddFileToCache(string fileName, byte[] content)
+    {
+        // Create buffer for data (length + file content)
+        byte[] buffer = new byte[4 + content.Length];
+
+        // Add length of the file to the buffer
+        BitConverter.GetBytes(content.Length).CopyTo(buffer, 0);
+        // Add file content to the buffer
+        content.CopyTo(buffer, 4);
+
+        _files.TryAdd(fileName, buffer);
     }
 
     /// <summary>

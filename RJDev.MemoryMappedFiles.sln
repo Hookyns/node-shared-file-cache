@@ -5,6 +5,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		README.md = README.md
 		LICENSE = LICENSE
+		.dockerignore = .dockerignore
+		Dockerfile-linux = Dockerfile-linux
+		Dockerfile-osx = Dockerfile-osx
+		Dockerfile-win = Dockerfile-win
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RJDev.MemoryMappedFiles.Module", "src\RJDev.MemoryMappedFiles.Module\RJDev.MemoryMappedFiles.Module.csproj", "{94315D6C-3406-487B-B0C9-099692C19552}"

@@ -1,0 +1,27 @@
+# https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
+
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+#FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-preview-alpine AS build
+ARG TARGETARCH
+
+WORKDIR /src
+COPY ["src/RJDev.MemoryMappedFiles.Module/RJDev.MemoryMappedFiles.Module.csproj", "RJDev.MemoryMappedFiles.Module/RJDev.MemoryMappedFiles.Module.csproj"]
+RUN dotnet restore "RJDev.MemoryMappedFiles.Module/RJDev.MemoryMappedFiles.Module.csproj" -a $TARGETARCH
+
+# Add .NET 6
+COPY --from=mcr.microsoft.com/dotnet/sdk:6.0 /usr/share/dotnet /usr/share/dotnet
+
+# Install gcc
+RUN apt-get update
+RUN apt-get install build-essential -y
+RUN apt-get install zlib1g-dev -y
+
+COPY src/. .
+WORKDIR /src/RJDev.MemoryMappedFiles.Module
+RUN dotnet publish -a $TARGETARCH -c Release --no-restore -o /publish/$TARGETARCH
+
+FROM alpine:latest as final
+WORKDIR /dist
+COPY --from=build /publish .
+
+CMD cp /dist/RJDev.MemoryMappedFiles.Module.node /output/mmf.linux-x64.node

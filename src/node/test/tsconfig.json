@@ -1,0 +1,17 @@
+﻿{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true
+  },
+  "files": [
+    "test.ts"
+  ]
+}

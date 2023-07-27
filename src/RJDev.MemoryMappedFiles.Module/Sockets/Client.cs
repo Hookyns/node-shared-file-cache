@@ -25,6 +25,9 @@ public class Client : IDisposable
 
         // Create TCP client
         var tcpClient = new TcpClient(IPAddress.Loopback.ToString(), tcpPort);
+        tcpClient.NoDelay = true;
+        tcpClient.SendBufferSize = 256;
+        tcpClient.ReceiveBufferSize = 1024 * 100;
 
         // Create SocketClient wrapper
         _client = new SocketClient(tcpClient, _cancellationTokenSource.Token);
@@ -87,7 +90,6 @@ public class Client : IDisposable
             _taskCompletionSource = new();
 
             await _client.SendAsync(Encoding.UTF8.GetBytes(fileName)).ConfigureAwait(false);
-            Console.WriteLine($"Requesting file... {fileName}");
             return await _taskCompletionSource.Task.ConfigureAwait(false);
         }
         finally

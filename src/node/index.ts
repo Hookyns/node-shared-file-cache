@@ -5,6 +5,7 @@ export type Client = {
     getFileAsync(fileName: string): Promise<string>;
     getFile(fileName: string): string | undefined;
     dispose(): void;
+    [Symbol.dispose](): void;
 };
 
 type Module = {
@@ -23,6 +24,7 @@ const Module: Module = require(getAddonPath()).Module;
  * @param tcpPort
  */
 export function startCacheServer(workingDirectory: string, include: string[] = ["**/*"], tcpPort: number = 9876) {
+    console.log("Working directory:", path.resolve(process.cwd(), workingDirectory));
     Module.startCacheServer(path.resolve(process.cwd(), workingDirectory), include, tcpPort);
 }
 

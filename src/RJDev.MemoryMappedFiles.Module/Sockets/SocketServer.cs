@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -29,6 +30,12 @@ public class SocketServer : IDisposable
 
         _listener = new TcpListener(IPAddress.Loopback, tcpPort);
         _listener.Server.NoDelay = true;
+        _listener.Server.SendBufferSize = 1024 * 100;
+        _listener.Server.ReceiveBufferSize = 256;
+
+        Console.WriteLine($"ReceiveTimeout: {_listener.Server.ReceiveTimeout}");
+        Console.WriteLine($"SendTimeout: {_listener.Server.SendTimeout}");
+        Console.WriteLine($"SendBufferSize : {_listener.Server.SendBufferSize }");
     }
 
     /// <summary>
@@ -99,20 +106,31 @@ public class SocketServer : IDisposable
 
     private async void OnMessageReceived(SocketClient client, ReadOnlyMemory<byte> message)
     {
+        string fileName = Encoding.UTF8.GetString(message.Span);
+
+        // Debug.WriteLine("Require file: " + fileName);
+
+        if (_cache.TryGetFile(fileName, out var data))
+        {
+            client.SendRaw(data);
+            return;
+        }
+
         try
         {
-            string fileName = Encoding.UTF8.GetString(message.Span);
-            await client.SendAsync(await _cache.GetFile(fileName)).ConfigureAwait(false);
+            // client.Send(await _cache.GetFile(fileName));
+            await client.SendAsync(await _cache.GetFile(fileName));
+            // await client.SendAsync(await _cache.GetFile(fileName)).ConfigureAwait(false);
         }
         catch (FileNotFoundException)
         {
             // TODO: Send some kind of message type; FileNotFound
-            await client.SendAsync(Array.Empty<byte>()).ConfigureAwait(false);
+            await client.SendAsync(Array.Empty<byte>());
         }
         catch (Exception exception)
         {
             Console.WriteLine(exception);
-            await client.SendAsync(Array.Empty<byte>()).ConfigureAwait(false);
+            await client.SendAsync(Array.Empty<byte>());
         }
     }
 

@@ -74,9 +74,25 @@ public class SocketClient : IDisposable
             throw new InvalidOperationException("Cannot send data synchronously when StartReceive() was called.");
         }
 
-        _stream.Write(BitConverter.GetBytes(data.Length));
-        _stream.Write(data, 0, data.Length);
+        var buffer = ArrayPool<byte>.Shared.Rent(data.Length + 4);
+        BitConverter.GetBytes(data.Length).CopyTo(buffer, 0);
+        data.CopyTo(buffer, 4);
+        _stream.Write(buffer, 0, data.Length + 4);
+        // _stream.Write(BitConverter.GetBytes(data.Length));
+        // _stream.Write(data, 0, data.Length);
+        // _stream.Flush();
         return WaitForData();
+    }
+
+    /// <summary>
+    /// Send data to client and wait for response.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    internal void SendRaw(byte[] data)
+    {
+        _stream.Write(data);
     }
 
     private ReadOnlyMemory<byte> WaitForData()
