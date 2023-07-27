@@ -8,6 +8,7 @@ dist/
 src/node/**/*.js
 src/node/**/*.js.map
 .idea
+*.tgz
 
 # User-specific files
 *.rsuser
