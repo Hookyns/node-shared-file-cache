@@ -8,6 +8,7 @@
         <PublishAot>true</PublishAot>
         <PublishNodeModule>true</PublishNodeModule>
         <PublishDir>publish</PublishDir>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <!-- <DebugType>None</DebugType>-->
         <!-- <DebugSymbols>false</DebugSymbols>-->
         <!-- <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>-->

@@ -16,7 +16,7 @@ namespace RJDev.MemoryMappedFiles.Module.Sockets;
 public class SocketServer : IDisposable
 {
     private readonly MemoryMappedCache _cache;
-    private readonly ConcurrentDictionary<SocketClient, bool> _clients = new();
+    private readonly ConcurrentDictionary<SocketServerClient, bool> _clients = new();
     private readonly TcpListener _listener;
 
     private CancellationTokenSource? _cancellationTokenSource;
@@ -32,10 +32,6 @@ public class SocketServer : IDisposable
         _listener.Server.NoDelay = true;
         _listener.Server.SendBufferSize = 1024 * 100;
         _listener.Server.ReceiveBufferSize = 256;
-
-        Console.WriteLine($"ReceiveTimeout: {_listener.Server.ReceiveTimeout}");
-        Console.WriteLine($"SendTimeout: {_listener.Server.SendTimeout}");
-        Console.WriteLine($"SendBufferSize : {_listener.Server.SendBufferSize }");
     }
 
     /// <summary>
@@ -78,7 +74,7 @@ public class SocketServer : IDisposable
             TcpClient tcpClient = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
 
             // Create ScketClient
-            var client = new SocketClient(tcpClient, _cancellationTokenSource.Token);
+            var client = new SocketServerClient(tcpClient, _cancellationTokenSource.Token);
 
             // Set events
             client.OnMessageReceived += OnMessageReceived;
@@ -91,7 +87,7 @@ public class SocketServer : IDisposable
         }
     }
 
-    private void OnDisconnectClient(SocketClient client)
+    private void OnDisconnectClient(SocketServerClient client)
     {
         try
         {
@@ -104,22 +100,22 @@ public class SocketServer : IDisposable
         }
     }
 
-    private async void OnMessageReceived(SocketClient client, ReadOnlyMemory<byte> message)
+    private async void OnMessageReceived(SocketServerClient client, ReadOnlyMemory<byte> message)
     {
         string fileName = Encoding.UTF8.GetString(message.Span);
 
         // Debug.WriteLine("Require file: " + fileName);
 
-        if (_cache.TryGetFile(fileName, out var data))
+        if (_cache.TryGetFile(fileName, out var pointer))
         {
-            client.SendRaw(data);
+            client.SendRaw(BitConverter.GetBytes(pointer));
             return;
         }
 
         try
         {
             // client.Send(await _cache.GetFile(fileName));
-            await client.SendAsync(await _cache.GetFile(fileName));
+            client.SendRaw(BitConverter.GetBytes(await _cache.GetFile(fileName)));
             // await client.SendAsync(await _cache.GetFile(fileName)).ConfigureAwait(false);
         }
         catch (FileNotFoundException)
@@ -148,7 +144,7 @@ public class SocketServer : IDisposable
             _cancellationTokenSource?.Dispose();
             _acceptConnectionsTask?.Dispose();
 
-            foreach ((SocketClient client, bool _) in _clients)
+            foreach ((SocketServerClient client, bool _) in _clients)
             {
                 client.Dispose();
             }

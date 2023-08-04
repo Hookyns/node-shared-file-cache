@@ -54,6 +54,7 @@ public static class Module
     public static void StopCacheServer()
     {
         server?.Stop();
+        server?.Dispose();
     }
 
     /// <summary>

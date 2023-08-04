@@ -1,19 +1,15 @@
 ﻿using System;
 using Microsoft.JavaScript.NodeApi;
-using RJDev.MemoryMappedFiles.Module.Sockets;
 
 namespace RJDev.MemoryMappedFiles.Tests;
 
 public class SocketServerFixture : IDisposable
 {
-    public SocketServer SocketServer { get; }
     private JSValueScope _scope;
 
     public SocketServerFixture()
     {
-        var cache = new Module.MemoryMappedCache("F:/Work/packages/rttist/dev/hookyns/transformer/src");
-        SocketServer = new SocketServer(cache, 9876);
-        SocketServer.Start();
+        Module.Module.StartCacheServer("F:/Work/packages/memory-mapped-cache/src/node/test/test-files", new[] { "**/*" }, 9876);
 
         // NodejsPlatform platform = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "libnode"));
         //
@@ -29,7 +25,7 @@ public class SocketServerFixture : IDisposable
 
     public void Dispose()
     {
-        SocketServer.Dispose();
+        Module.Module.StopCacheServer();
         _scope.Dispose();
     }
 }
